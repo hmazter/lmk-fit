@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel {
 	protected $commands = [
 		'LMK\Console\Commands\InspireCommand',
         'LMK\Console\Commands\FetchData',
-        'LMK\Console\Commands\Fetch',
+//        'LMK\Console\Commands\Fetch',
 	];
 
 	/**
