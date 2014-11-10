@@ -1,0 +1,5 @@
+/config/hmazter
+/config/local
+/vendor
+.idea
+.env
