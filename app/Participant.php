@@ -15,6 +15,9 @@ class Participant extends Model {
 
     protected $fillable = ['name', 'picture', 'access_token', 'refresh_token', 'token_expire'];
 
+    public function fitnessData() {
+        return $this->hasMany('LMK\FitnessData');
+    }
 
     public function setAccessToken($token)
     {
@@ -48,18 +51,22 @@ class Participant extends Model {
         $response = $restClient->get($url, $options);
         $fitnessData = $response->json();
         $steps = [];
-        foreach ($fitnessData['point'] as $point) {
-            foreach ($point['value'] as $values) {
-                foreach ($values as $type => $value) {
-                    if($type == 'intVal') {
-                        $fitnessDate = date('Y-m-d', intval($point['startTimeNanos'] / (1000*1000*1000)));
-                        if (!isset($steps[$fitnessDate])) {
-                            $steps[$fitnessDate] = 0;
+        if (isset($fitnessData['point'])) {
+            foreach ($fitnessData['point'] as $point) {
+                foreach ($point['value'] as $values) {
+                    foreach ($values as $type => $value) {
+                        if ($type == 'intVal') {
+                            $fitnessDate = date('Y-m-d', intval($point['startTimeNanos'] / (1000 * 1000 * 1000)));
+                            if (!isset($steps[$fitnessDate])) {
+                                $steps[$fitnessDate] = 0;
+                            }
+                            $steps[$fitnessDate] += intval($value);
                         }
-                        $steps[$fitnessDate] += intval($value);
                     }
                 }
             }
+        } elseif(php_sapi_name()=='cli') {
+            return $fitnessData;
         }
 
         foreach ($steps as $fitnessDate => $amount) {
