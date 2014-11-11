@@ -13,7 +13,8 @@
                 <tr>
                     <th></th>
                     <th>Deltagare</th>
-                    <th></th>
+                    <th>Snitt steg/dag</th>
+                    <th>Ladda om data</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,8 +23,15 @@
                     <td width="45"><img src="{{ $participant->picture }}" class="img-circle" width="40"></td>
                     <td>{{ $participant->name }}</td>
                     <td>
-                        <a href="/participant/reload/{{$participant->id}}/today" class="btn btn-default">Ladda om idag</a>
-                        <a href="/participant/reload/{{$participant->id}}/week" class="btn btn-default">Ladda om vecka</a>
+                        @if($participant->day_count > 0)
+                            {{ number_format($participant->total_steps / $participant->day_count, 0, ',', ' ') }} steg / dag
+                        @else
+                            0 steg / dag
+                        @endif
+                    </td>
+                    <td>
+                        <a href="/participant/reload/{{$participant->id}}/today" class="btn btn-default">Dagens</a>
+                        <a href="/participant/reload/{{$participant->id}}/week" class="btn btn-default">Senaste veckans</a>
                     </td>
                 </tr>
                 @endforeach

@@ -11,7 +11,16 @@ class ParticipantController extends Controller {
 
 	public function index()
 	{
-        $participants = Participant::all();
+        $participants = Participant::with('fitnessData')->get();
+        foreach ($participants as $index => $participant) {
+            $fitnessData = $participant->fitnessData;
+            $participant->total_steps = 0;
+            $participant->day_count = 0;
+            foreach ($fitnessData as $data) {
+                $participant->total_steps += $data->amount;
+                $participant->day_count ++;
+            }
+        }
 
 		return view('participants')->with(array(
             'participants'  => $participants,

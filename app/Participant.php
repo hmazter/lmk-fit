@@ -15,6 +15,9 @@ class Participant extends Model {
 
     protected $fillable = ['name', 'picture', 'access_token', 'refresh_token', 'token_expire'];
 
+    public function fitnessData() {
+        return $this->hasMany('LMK\FitnessData');
+    }
 
     public function setAccessToken($token)
     {
