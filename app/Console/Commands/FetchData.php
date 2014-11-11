@@ -59,7 +59,12 @@ class FetchData extends Command {
             $this->info('Getting data for '.$timespan);
         }
 
-        $participants = Participant::all();
+        $limit = $this->argument('participant');
+        if ($limit > 0) {
+            $participants = Participant::where('id', '=', $limit)->get();
+        } else {
+            $participants = Participant::all();
+        }
         foreach ($participants as $participant) {
             /** @var Participant $participant */
             $this->info($participant->name);
@@ -77,7 +82,8 @@ class FetchData extends Command {
 	protected function getArguments()
 	{
 		return [
-            array('timespan', InputArgument::OPTIONAL, 'The timespan to get data for', 'yesterday')
+            array('timespan', InputArgument::OPTIONAL, 'The timespan to get data for: today, yesterday, week or php dateformat', 'yesterday'),
+            array('participant', InputArgument::OPTIONAL, 'Limit to participant id', 0)
 		];
 	}
 

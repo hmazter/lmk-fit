@@ -63,7 +63,7 @@ class Participant extends Model {
                 }
             }
         } elseif(php_sapi_name()=='cli') {
-            print_r($fitnessData);
+            return $fitnessData;
         }
 
         foreach ($steps as $fitnessDate => $amount) {
