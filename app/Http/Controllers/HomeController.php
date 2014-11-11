@@ -1,6 +1,7 @@
 <?php namespace LMK\Http\Controllers;
 
 use GuzzleHttp\Client;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
@@ -59,7 +60,7 @@ class HomeController extends Controller {
         ));
 	}
 
-    public function getAdd()
+    public function auth()
     {
         $serviceConfig = Config::get('services.fit');
         $url = 'https://accounts.google.com/o/oauth2/auth';
@@ -79,8 +80,11 @@ class HomeController extends Controller {
 
     public function code()
     {
+        if (!Input::has('code')) {
+            return new Response('Missing parameter: code', 400);
+        }
+
         // Get callback data
-        $name = Input::get('state');
         $code = Input::get('code');
         $serviceConfig = Config::get('services.fit');
 
@@ -88,8 +92,8 @@ class HomeController extends Controller {
         $url = 'https://accounts.google.com/o/oauth2/token';
         $data = [
             'body' => [
-                'code' => $code,
-                'client_id' => $serviceConfig['client_id'],
+                'code'          => $code,
+                'client_id'     => $serviceConfig['client_id'],
                 'client_secret' => $serviceConfig['client_secret'],
                 'redirect_uri'  => 'http://lmk-fit.hmazter.com/code',
                 'grant_type'    => 'authorization_code'
@@ -98,7 +102,6 @@ class HomeController extends Controller {
         $client = new Client();
         $response = $client->post($url, $data);
         $jsonData = $response->json();
-
 
         // get participant name
         $url = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json';
@@ -109,13 +112,11 @@ class HomeController extends Controller {
         ];
         $response = $client->get($url, $options);
         $profileData = $response->json();
-        $name = $profileData['name'];
-        $picture = $profileData['picture'];
 
         // save as new participant
         Participant::create([
-            'name'          => $name,
-            'picture'       => $picture,
+            'name'          => $profileData['name'],
+            'picture'       => $profileData['picture'],
             'access_token'  => $jsonData['access_token'],
             'refresh_token' => $jsonData['refresh_token'],
             'token_expire'  => time() + $jsonData['expires_in']
@@ -128,5 +129,4 @@ class HomeController extends Controller {
     public function about() {
         return view('about');
     }
-
 }

@@ -1,19 +1,3 @@
-<?php
-$menulist = [
-    [
-        'title' => 'Om',
-        'url'   => action('LMK\Http\Controllers\HomeController@about')
-    ],
-    [
-        'title' => 'Deltagarlista',
-        'url'   => action('LMK\Http\Controllers\ParticipantController@index')
-    ],
-    [
-        'title' => 'Autentisera dig som deltagare',
-        'url'   => action('LMK\Http\Controllers\HomeController@getAdd')
-    ],
-];
-?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -46,6 +30,22 @@ $menulist = [
                         <a class="navbar-brand" href="/">LMK Fitness</a>
                     </div>
 
+                    <?php
+                    $menulist = [
+                        [
+                            'title' => 'Om',
+                            'url'   => action('LMK\Http\Controllers\HomeController@about')
+                        ],
+                        [
+                            'title' => 'Deltagarlista',
+                            'url'   => action('LMK\Http\Controllers\ParticipantController@index')
+                        ],
+                        [
+                            'title' => 'Autentisera dig som deltagare',
+                            'url'   => action('LMK\Http\Controllers\HomeController@auth')
+                        ],
+                    ];
+                    ?>
                     <div id="navbar" class="navbar-collapse collapse">
                         <ul class="nav navbar-nav navbar-right">
                             @foreach($menulist as $menu)

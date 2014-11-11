@@ -1,22 +1,9 @@
 <?php
-
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It's a breeze. Simply tell Laravel the URIs it should respond to
-| and give it the Closure to execute when that URI is requested.
-|
-*/
-
 /*
  * HomeController
  */
 $router->get('/', 'HomeController@index');
-$router->get('/add', 'HomeController@getAdd');
-$router->post('/add', 'HomeController@postAdd');
+$router->get('/auth', 'HomeController@auth');
 $router->get('/code', 'HomeController@code');
 $router->get('/about', 'HomeController@about');
 
@@ -36,7 +23,8 @@ $router->get('/participant/reload/{id}/{timespan?}', 'ParticipantController@relo
 | passwords for your users. You may modify or remove these files.
 |
 */
-
+/*
 $router->controller('auth', 'AuthController');
 
 $router->controller('password', 'PasswordController');
+*/
