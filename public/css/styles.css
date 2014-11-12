@@ -9,3 +9,9 @@ table.table-toplist tbody tr:nth-child(2) {
 table.table-toplist tbody tr:nth-child(3) {
     background: #cc9966;
 }
+
+table.table-toplist tbody tr:nth-child(1) .text-muted,
+table.table-toplist tbody tr:nth-child(2) .text-muted,
+table.table-toplist tbody tr:nth-child(3) .text-muted {
+    color: #ffffff;
+}
