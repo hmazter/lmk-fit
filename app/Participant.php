@@ -55,12 +55,14 @@ class Participant extends Model {
             foreach ($fitnessData['point'] as $point) {
                 foreach ($point['value'] as $values) {
                     foreach ($values as $type => $value) {
+                        $fitnessDate = date('Y-m-d', intval($point['startTimeNanos'] / (1000 * 1000 * 1000)));
+                        if (!isset($steps[$fitnessDate])) {
+                            $steps[$fitnessDate] = 0;
+                        }
                         if ($type == 'intVal') {
-                            $fitnessDate = date('Y-m-d', intval($point['startTimeNanos'] / (1000 * 1000 * 1000)));
-                            if (!isset($steps[$fitnessDate])) {
-                                $steps[$fitnessDate] = 0;
-                            }
                             $steps[$fitnessDate] += intval($value);
+                        } elseif ($type == 'fpVal') {
+                            $steps[$fitnessDate] += doubleval($value);
                         }
                     }
                 }
