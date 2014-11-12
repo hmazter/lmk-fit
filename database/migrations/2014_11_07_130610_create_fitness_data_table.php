@@ -18,7 +18,7 @@ class CreateFitnessDataTable extends Migration {
             $table->integer('participant_id')->unsigned();
             $table->enum('type', array('steps', 'time'));
             $table->date('date');
-            $table->string('amount');
+            $table->integer('amount');
 			$table->timestamps();
 		});
 	}

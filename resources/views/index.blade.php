@@ -86,7 +86,7 @@
                     <tr>
                         <td>{{ $count++ }}</td>
                         <td>{{ $fitnessData->participant->name }}</td>
-                        <td>{{ $fitnessData->amount }} steg</td>
+                        <td>{{ number_format($fitnessData->amount, 0, ',', ' ') }} steg</td>
                     </tr>
                     @endforeach
                 </tbody>
