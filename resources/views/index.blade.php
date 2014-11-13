@@ -11,11 +11,13 @@
             <div class="alert alert-success" role="alert">Omladdning startad</div>
             @endif
 
+            <span class="pull-right">Senaste omladdningen: {{ $last_reload }}</span>
+            <h3>Steg per dag och deltagare</h3>
             <div class="table-responsive">
                 <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Datum \ Deltagare</th>
+                        <th>Datum</th>
                         @foreach($participants as $id => $participant)
                             <th>
                                 {{ $participant->name }}
@@ -92,9 +94,6 @@
                 </tbody>
             </table>
 
-            <p>
-            Senaste omladdningen: {{ $last_reload }}
-            </p>
         </div>
     </div>
 @stop
