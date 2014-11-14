@@ -17,7 +17,11 @@ class HomeController extends Controller {
          */
         $data = [];
         $participants = [];
-        $rows = FitnessData::with('participant')->where('type', '=', 'steps')->get();
+        $rows = FitnessData::
+            with('participant')
+            ->where('type', '=', 'steps')
+            ->where('date', '>=', date('Y-m-d', strtotime('-10 days')))
+            ->get();
         foreach ($rows as $fitnessData) {
             $data[$fitnessData->date][$fitnessData->participant_id] = $fitnessData->amount;
             $participants[$fitnessData->participant_id] = $fitnessData->participant;
