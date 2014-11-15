@@ -32,14 +32,14 @@ class ParticipantController extends Controller {
         $endDate = null;
         if ($timespan == 'week') {
             $date = strtotime('-8 day');
-            $message = 'Getting data for a week ending yesterday for ';
+            $message = 'Hämtat förra veckans data för ';
         } elseif ($timespan == 'today') {
             $date = strtotime('today');
             $endDate = $date;
-            $message = 'Getting data for today for ';
+            $message = 'Hämtat dagens data för ';
         } elseif ($timespan == 'yesterday') {
             $date = strtotime('-1 day');
-            $message = 'Getting data for yesterday for ';
+            $message = 'Hämtat gårdagens data för ';
         }
 
         $participant = Participant::findOrFail($id);

@@ -31,6 +31,7 @@
                     </td>
                     <td>
                         <a href="/participant/reload/{{$participant->id}}/today" class="btn btn-default">Dagens</a>
+                        <a href="/participant/reload/{{$participant->id}}/yesterday" class="btn btn-default">Gårdagen</a>
                         <a href="/participant/reload/{{$participant->id}}/week" class="btn btn-default">Senaste veckans</a>
                     </td>
                 </tr>
