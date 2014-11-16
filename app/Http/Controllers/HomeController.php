@@ -35,12 +35,12 @@ class HomeController extends Controller {
             with('participant')
             ->selectRaw('fitness_data.*, sum(amount) as total_amount')
             ->where('type', '=', 'steps')
-            ->where('date', '>=', date('Y-m-d', strtotime('-8 days')))
+            ->where('date', '>=', date('Y-m-d', strtotime('-7 days')))
             ->where('date', '<', date('Y-m-d'))
             ->groupBy('participant_id')
             ->orderBy('total_amount', 'desc')
             ->get();
-        $weekTopDates = date('Y-m-d', strtotime('-8 days')).' - '.date('Y-m-d', strtotime('-1 day'));
+        $weekTopDates = date('Y-m-d', strtotime('-7 days')).' - '.date('Y-m-d', strtotime('-1 day'));
 
         /*
          * Yesterday top
