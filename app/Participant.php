@@ -2,9 +2,12 @@
 
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 use Illuminate\Support\Facades\Config;
 
 class Participant extends Model {
+
+    use SoftDeletingTrait;
 
 	/**
 	 * The database table used by the model.
