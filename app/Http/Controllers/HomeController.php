@@ -16,15 +16,14 @@ class HomeController extends Controller {
          * Steps table
          */
         $data = [];
-        $participants = [];
         $rows = FitnessData::
             with('participant')
             ->where('type', '=', 'steps')
             ->where('date', '>=', date('Y-m-d', strtotime('-10 days')))
+            ->has('participant')
             ->get();
         foreach ($rows as $fitnessData) {
             $data[$fitnessData->date][$fitnessData->participant_id] = $fitnessData->amount;
-            $participants[$fitnessData->participant_id] = $fitnessData->participant;
         }
         krsort($data);
 
@@ -37,6 +36,7 @@ class HomeController extends Controller {
             ->where('type', '=', 'steps')
             ->where('date', '>=', date('Y-m-d', strtotime('-7 days')))
             ->where('date', '<', date('Y-m-d'))
+            ->has('participant')
             ->groupBy('participant_id')
             ->orderBy('total_amount', 'desc')
             ->get();
@@ -50,11 +50,12 @@ class HomeController extends Controller {
             with('participant')
             ->where('type', '=', 'steps')
             ->where('date', '=', $yesterdayTopDates)
+            ->has('participant')
             ->orderBy('amount', 'desc')
             ->get();
 
 		return view('index')->with(array(
-            'participants'  => $participants,
+            'participants'  => Participant::all(),
             'fitnessData'   => $data,
             'weekTop'       => $weekTop,
             'weekTopDates'  => $weekTopDates,

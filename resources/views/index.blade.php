@@ -18,7 +18,7 @@
                 <thead>
                     <tr>
                         <th>Datum</th>
-                        @foreach($participants as $id => $participant)
+                        @foreach($participants as $participant)
                             <th>
                                 {{ $participant->name }}
                             </th>
@@ -29,10 +29,10 @@
                     @foreach($fitnessData as $date => $steps)
                     <tr>
                         <td>{{ $date }}</td>
-                        @foreach($participants as $id => $participant)
+                        @foreach($participants as $participant)
                             <td>
-                                @if(isset($steps[$id]))
-                                {{ number_format($steps[$id], 0, ',', ' ') }} steps
+                                @if(isset($steps[$participant->id]))
+                                {{ number_format($steps[$participant->id], 0, ',', ' ') }} steps
                                 @endif
                             </td>
                         @endforeach
