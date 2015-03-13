@@ -10,8 +10,7 @@
 
         <title>LMK Fitness</title>
 
-        <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-        <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
+        <link href="{{ elixir('css/build.css') }}" rel="stylesheet">
     </head>
 
     <body>
@@ -30,29 +29,7 @@
                         <a class="navbar-brand" href="/">LMK Fitness</a>
                     </div>
 
-                    <?php
-                    $menulist = [
-                        [
-                            'title' => 'Om',
-                            'url'   => action('LMK\Http\Controllers\HomeController@about')
-                        ],
-                        [
-                            'title' => 'Deltagarlista',
-                            'url'   => action('LMK\Http\Controllers\ParticipantController@index')
-                        ],
-                        [
-                            'title' => 'Autentisera dig som deltagare',
-                            'url'   => action('LMK\Http\Controllers\HomeController@auth')
-                        ],
-                    ];
-                    ?>
-                    <div id="navbar" class="navbar-collapse collapse">
-                        <ul class="nav navbar-nav navbar-right">
-                            @foreach($menulist as $menu)
-                            <li class="{{ Request::url() == $menu['url'] ? 'active' : '' }}"><a href="{{ $menu['url'] }}">{{ $menu['title'] }}</a></li>
-                            @endforeach
-                        </ul>
-                    </div><!--/.nav-collapse --
+                    @include('partials.navigation')
                 </div><!--/.container-fluid -->
             </nav>
 

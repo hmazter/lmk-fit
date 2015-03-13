@@ -1,0 +1,22 @@
+@gold: gold;
+@silver: silver;
+@bronze: #cc9966;
+
+
+table.table-toplist tbody {
+  tr:nth-child(1) {
+    background: @gold;
+    font-size: 18px;
+  }
+  tr:nth-child(2) {
+    background: @silver;
+    font-size: 16px;
+  }
+  tr:nth-child(3) {
+    background: @bronze;
+  }
+
+  tr:nth-child(-n+3) .text-muted{
+    color: #ffffff;
+  }
+}

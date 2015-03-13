@@ -12,7 +12,7 @@ class RouteServiceProvider extends ServiceProvider {
 	 *
 	 * @var string
 	 */
-	protected $namespace = null; //'LMK\Http\Controllers';
+	protected $namespace = 'LMK\Http\Controllers';
 
 	/**
 	 * Define your route model bindings, pattern filters, etc.
