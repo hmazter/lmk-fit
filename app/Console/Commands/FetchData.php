@@ -1,11 +1,7 @@
 <?php namespace LMK\Console\Commands;
 
-use GuzzleHttp\Client;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Config;
-use LMK\FitnessData;
 use LMK\Participant;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
 class FetchData extends Command {
@@ -28,7 +24,6 @@ class FetchData extends Command {
     /**
      * Create a new command instance.
      *
-     * @return void
      */
     public function __construct()
     {
@@ -61,7 +56,7 @@ class FetchData extends Command {
 
         $limit = $this->argument('participant');
         if ($limit > 0) {
-            $participants = Participant::where('id', '=', $limit)->get();
+            $participants = [Participant::find($limit)];
         } else {
             $participants = Participant::all();
         }

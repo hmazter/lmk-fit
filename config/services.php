@@ -23,15 +23,21 @@ return [
 		'secret' => '',
 	],
 
+	'ses' => [
+		'key' => '',
+		'secret' => '',
+		'region' => 'us-east-1',
+	],
+
 	'stripe' => [
 		'model'  => 'User',
 		'secret' => '',
 	],
 
     'fit' => [
-        'grant_type'    => 'refresh_token',
-        'client_secret' => '',
-        'client_id'     => '',
+        'grant_type'    => env('FIT_GRANT_TYPE'),
+        'client_secret' => env('FIT_CLIENT_SECRET'),
+        'client_id'     => env('FIT_CLIENT_ID'),
     ]
 
 ];

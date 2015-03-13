@@ -4,7 +4,6 @@ use GuzzleHttp\Client;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Session;
 use LMK\FitnessData;
 use LMK\Participant;
 

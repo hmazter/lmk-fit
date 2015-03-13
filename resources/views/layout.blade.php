@@ -59,7 +59,7 @@
             @yield('content')
 
             <div class="footer">
-                <p>Kristoffer Högberg 2014 | <a href="https://github.com/hmazter/lmk-fit">GitHub</a></p>
+                <p>Kristoffer Högberg 2014-2015 | <a href="https://github.com/hmazter/lmk-fit">GitHub</a></p>
             </div>
 
         </div> <!-- /container -->
