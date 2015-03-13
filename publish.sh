@@ -4,7 +4,7 @@ git pull origin master --tags
 
 sudo ./composer.phar install
 
-sudo chown -R www-data:www-data storage
+sudo chmod -R 755 storage
 
 php artisan migrate --force
 
