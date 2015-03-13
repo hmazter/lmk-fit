@@ -3,13 +3,13 @@ $menulist =
     [
         [
             'title' => 'Om',
-            'url'   => action('HomeController@about')
+            'url'   => route('about')
         ], [
             'title' => 'Deltagarlista',
-            'url'   => action('ParticipantController@index')
+            'url'   => route('participants')
         ], [
             'title' => 'Autentisera dig som deltagare',
-            'url'   => action('HomeController@auth')
+            'url'   => route('auth')
         ],
     ];
 ?>

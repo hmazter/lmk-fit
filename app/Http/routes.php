@@ -5,16 +5,16 @@
 /*
  * HomeController
  */
-$router->get('/', 'HomeController@index');
-$router->get('/auth', 'HomeController@auth');
-$router->get('/code', 'HomeController@code');
-$router->get('/about', 'HomeController@about');
+$router->get('/', ['as' => 'home', 'uses' => 'HomeController@index']);
+$router->get('/auth', ['as' => 'auth', 'uses' => 'HomeController@auth']);
+$router->get('/code', ['as' => 'code', 'uses' => 'HomeController@code']);
+$router->get('/about', ['as' => 'about', 'uses' => 'HomeController@about']);
 
 /*
  * ParticipantController
  */
-$router->get('/participants', 'ParticipantController@index');
-$router->get('/participant/reload/{id}/{timespan?}', 'ParticipantController@reload');
+$router->get('/participants', ['as' => 'participants', 'uses' => 'ParticipantController@index']);
+$router->get('/participant/reload/{id}/{timespan?}', ['as' => 'reload', 'uses' => 'ParticipantController@reload']);
 
 
 //dd($router);
