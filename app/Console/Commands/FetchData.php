@@ -1,7 +1,10 @@
-<?php namespace LMK\Console\Commands;
+<?php
+
+namespace LMK\Console\Commands;
 
 use Illuminate\Console\Command;
-use LMK\Participant;
+use LMK\Models\Participant;
+use LMK\Services\FitService;
 use Symfony\Component\Console\Input\InputArgument;
 
 class FetchData extends Command {
@@ -21,12 +24,17 @@ class FetchData extends Command {
      */
     protected $description = 'Fetch data from Google Fit REST API.';
 
+    /** @var FitService $fitService */
+    protected $fitService;
+
     /**
      * Create a new command instance.
      *
      */
-    public function __construct()
+    public function __construct(FitService $fitService)
     {
+        $this->fitService = $fitService;
+
         parent::__construct();
     }
 
@@ -63,7 +71,7 @@ class FetchData extends Command {
         foreach ($participants as $participant) {
             /** @var Participant $participant */
             $this->info($participant->name);
-            $structured = $participant->updateFitnessData($date, $endDate);
+            $structured = $this->fitService->updateFitnessData($participant, $date, $endDate);
 
             $this->info(var_export($structured, true));
         }
@@ -93,5 +101,4 @@ class FetchData extends Command {
 
 		];
 	}
-
 }

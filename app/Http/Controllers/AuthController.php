@@ -2,6 +2,10 @@
 
 namespace LMK\Http\Controllers;
 
+use GuzzleHttp\Client;
+use Illuminate\Http\Request;
+use LMK\Models\Participant;
+
 class AuthController extends Controller
 {
     public function auth()
@@ -22,15 +26,15 @@ class AuthController extends Controller
         return redirect($url);
     }
 
-    public function code()
+    public function code(Request $request)
     {
-        if (!Input::has('code')) {
-            return new Response('Missing parameter: code', 400);
+        if (!$request->has('code')) {
+            return response('Missing parameter: code', 400);
         }
 
         // Get callback data
-        $code = Input::get('code');
-        $serviceConfig = Config::get('services.fit');
+        $code = $request->get('code');
+        $serviceConfig = config()->get('services.fit');
 
         // exchange code for access token
         $url = 'https://accounts.google.com/o/oauth2/token';
