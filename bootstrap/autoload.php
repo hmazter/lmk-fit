@@ -16,6 +16,14 @@ define('LARAVEL_START', microtime(true));
 
 require __DIR__ . '/../vendor/autoload.php';
 
+
+/*
+ * Autoload Annotations
+ */
+\Doctrine\Common\Annotations\AnnotationRegistry::registerAutoloadNamespace(
+    'JMS\Serializer\Annotation', __DIR__.'/../vendor/jms/serializer/src'
+);
+
 /*
 |--------------------------------------------------------------------------
 | Include The Compiled Class File

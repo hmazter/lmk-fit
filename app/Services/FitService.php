@@ -2,8 +2,11 @@
 
 namespace LMK\Services;
 
+use JMS\Serializer\SerializerBuilder;
 use GuzzleHttp\Client;
 use LMK\Models\Participant;
+use LMK\ValueObjects\FitRestApi\FitResponse;
+use LMK\ValueObjects\FitRestApi\Point;
 
 class FitService
 {
@@ -32,26 +35,21 @@ class FitService
             'datasets/' . $startTimeNano . '-' . $endTimeNano;
 
         $response = $restClient->get($url, $options);
-        $fitnessData = $response->json();
+        $data = $response->getBody()->getContents();
+
+        /** @var FitResponse $fitResponse */
+        $fitResponse = $this->getSerializer()->deserialize($data, 'LMK\ValueObjects\FitRestApi\FitResponse', 'json');
         $steps = [];
-        if (isset($fitnessData['point'])) {
-            foreach ($fitnessData['point'] as $point) {
-                foreach ($point['value'] as $values) {
-                    foreach ($values as $type => $value) {
-                        $fitnessDate = date('Y-m-d', intval($point['startTimeNanos'] / (1000 * 1000 * 1000)));
-                        if (!isset($steps[$fitnessDate])) {
-                            $steps[$fitnessDate] = 0;
-                        }
-                        if ($type == 'intVal') {
-                            $steps[$fitnessDate] += intval($value);
-                        } elseif ($type == 'fpVal') {
-                            $steps[$fitnessDate] += doubleval($value);
-                        }
-                    }
-                }
+
+        /** @var Point $point */
+        foreach ($fitResponse->getPoints() as $point) {
+            $date = $point->getStartDate()->format('Y-m-d');
+
+            if (!isset($steps[$date])) {
+                $steps[$date] = 0;
             }
-        } elseif (php_sapi_name() == 'cli') {
-            return $fitnessData;
+
+            $steps[$date] += $point->getValueSum();
         }
 
         foreach ($steps as $fitnessDate => $amount) {
@@ -94,5 +92,12 @@ class FitService
 
         $startTime = new \DateTime(date('Y-m-d '.$time, $timestamp), new \DateTimeZone('UTC'));
         return $startTime->format('U') * (1000 * 1000 * 1000);
+    }
+
+    /**
+     * @return \JMS\Serializer\Serializer
+     */
+    private function getSerializer() {
+        return SerializerBuilder::create()->build();
     }
 }
