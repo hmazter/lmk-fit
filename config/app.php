@@ -52,7 +52,7 @@ return [
 	|
 	*/
 
-	'locale' => 'en',
+	'locale' => 'sv',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -141,11 +141,8 @@ return [
 		 * Application Service Providers...
 		 */
 		'LMK\Providers\AppServiceProvider',
-		'LMK\Providers\BusServiceProvider',
-		'LMK\Providers\ConfigServiceProvider',
 		'LMK\Providers\EventServiceProvider',
 		'LMK\Providers\RouteServiceProvider',
-
 
 		'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
 	],

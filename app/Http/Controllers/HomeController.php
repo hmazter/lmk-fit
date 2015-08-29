@@ -1,136 +1,42 @@
-<?php namespace LMK\Http\Controllers;
+<?php
 
-use GuzzleHttp\Client;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Input;
-use LMK\FitnessData;
-use LMK\Participant;
+namespace LMK\Http\Controllers;
 
-class HomeController extends Controller {
+use LMK\Models\FitnessData;
+use LMK\Models\Participant;
+use LMK\Repositories\FitnessDataRepository;
 
-	public function index()
-	{
-        /*
-         * Steps table
-         */
-        $data = [];
-        $rows = FitnessData::
-            with('participant')
-            ->where('type', '=', 'steps')
-            ->where('date', '>=', date('Y-m-d', strtotime('-10 days')))
-            ->has('participant')
-            ->get();
-        foreach ($rows as $fitnessData) {
-            $data[$fitnessData->date][$fitnessData->participant_id] = $fitnessData->amount;
-        }
-        krsort($data);
+class HomeController extends Controller
+{
+    /**
+     * Show the home page with steps table and top lists
+     *
+     * @param FitnessDataRepository $fitnessDataRepository
+     * @return \Illuminate\View\View
+     */
+    public function index(FitnessDataRepository $fitnessDataRepository)
+    {
+        $weekTop = $fitnessDataRepository->getWeekTop();
+        $yesterdayTop = $fitnessDataRepository->getYesterdayTop();
 
-        /*
-         * Week top
-         */
-        $weekTop = FitnessData::
-            with('participant')
-            ->selectRaw('fitness_data.*, sum(amount) as total_amount')
-            ->where('type', '=', 'steps')
-            ->where('date', '>=', date('Y-m-d', strtotime('-7 days')))
-            ->where('date', '<', date('Y-m-d'))
-            ->has('participant')
-            ->groupBy('participant_id')
-            ->orderBy('total_amount', 'desc')
-            ->get();
-        $weekTopDates = date('Y-m-d', strtotime('-7 days')).' - '.date('Y-m-d', strtotime('-1 day'));
-
-        /*
-         * Yesterday top
-         */
-        $yesterdayTopDates = date('Y-m-d', strtotime('-1 day'));
-        $yesterdayTop = FitnessData::
-            with('participant')
-            ->where('type', '=', 'steps')
-            ->where('date', '=', $yesterdayTopDates)
-            ->has('participant')
-            ->orderBy('amount', 'desc')
-            ->get();
-
-		return view('index')->with(array(
-            'participants'  => Participant::all(),
-            'fitnessData'   => $data,
-            'weekTop'       => $weekTop,
-            'weekTopDates'  => $weekTopDates,
-            'yesterdayTop'      => $yesterdayTop,
-            'yesterdayTopDates' => $yesterdayTopDates,
-            'last_reload'   => FitnessData::max('updated_at')
+        return view('index')->with(array(
+            'participants' => Participant::all(),
+            'fitnessData' => $fitnessDataRepository->getStructuredFitnessData(10),
+            'weekTop' => $weekTop->getData(),
+            'weekTopDates' => $weekTop->getDateString(),
+            'yesterdayTop' => $yesterdayTop->getData(),
+            'yesterdayTopDates' => $yesterdayTop->getDateString(),
+            'last_reload' => FitnessData::max('updated_at')
         ));
-	}
-
-    public function auth()
-    {
-        $serviceConfig = Config::get('services.fit');
-        $url = 'https://accounts.google.com/o/oauth2/auth';
-        $options = [
-            'response_type' => 'code',
-            'client_id'     => $serviceConfig['client_id'],
-            'scope'         => 'https://www.googleapis.com/auth/fitness.activity.write https://www.googleapis.com/auth/userinfo.profile',
-            'redirect_uri'  => 'http://lmk-fit.hmazter.com/code',
-            'access_type'   => 'offline',
-            'approval_prompt' => 'force'
-        ];
-
-        $url .= '?'.http_build_query($options);
-
-        return redirect($url);
     }
 
-    public function code()
+    /**
+     * Show the about page
+     *
+     * @return \Illuminate\View\View
+     */
+    public function about()
     {
-        if (!Input::has('code')) {
-            return new Response('Missing parameter: code', 400);
-        }
-
-        // Get callback data
-        $code = Input::get('code');
-        $serviceConfig = Config::get('services.fit');
-
-        // exchange code for access token
-        $url = 'https://accounts.google.com/o/oauth2/token';
-        $data = [
-            'body' => [
-                'code'          => $code,
-                'client_id'     => $serviceConfig['client_id'],
-                'client_secret' => $serviceConfig['client_secret'],
-                'redirect_uri'  => 'http://lmk-fit.hmazter.com/code',
-                'grant_type'    => 'authorization_code'
-            ]
-        ];
-        $client = new Client();
-        $response = $client->post($url, $data);
-        $jsonData = $response->json();
-
-        // get participant name
-        $url = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json';
-        $options = [
-            'headers' => [
-                'Authorization' => 'Bearer '.$jsonData['access_token']
-            ]
-        ];
-        $response = $client->get($url, $options);
-        $profileData = $response->json();
-
-        // save as new participant
-        Participant::create([
-            'name'          => $profileData['name'],
-            'picture'       => $profileData['picture'],
-            'access_token'  => $jsonData['access_token'],
-            'refresh_token' => $jsonData['refresh_token'],
-            'token_expire'  => time() + $jsonData['expires_in']
-        ]);
-
-        // flash message
-        return redirect('/')->with('message', 'added');
-    }
-
-    public function about() {
         return view('about');
     }
 }

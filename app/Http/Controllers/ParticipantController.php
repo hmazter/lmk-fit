@@ -1,51 +1,51 @@
-<?php namespace LMK\Http\Controllers;
+<?php
 
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Session;
-use LMK\FitnessData;
-use LMK\Participant;
+namespace LMK\Http\Controllers;
 
-class ParticipantController extends Controller {
+use LMK\Models\Participant;
+use LMK\Services\FitService;
 
-	public function index()
-	{
+class ParticipantController extends Controller
+{
+
+    /**
+     * List all participants
+     * with average steps per day
+     * and controls to reload data
+     *
+     * @return $this
+     */
+    public function index()
+    {
         $participants = Participant::with('fitnessData')->get();
-        foreach ($participants as $index => $participant) {
-            $fitnessData = $participant->fitnessData;
-            $participant->total_steps = 0;
-            $participant->day_count = 0;
-            foreach ($fitnessData as $data) {
-                $participant->total_steps += $data->amount;
-                $participant->day_count ++;
-            }
-        }
 
-		return view('participants')->with(array(
-            'participants'  => $participants,
-        ));
-	}
+        return view('participants')->with(compact('participants'));
+    }
 
-    public function reload($id, $timespan = 'yesterday')
+    /**
+     * Reload data from Google Fit server for a participant
+     *
+     * @param Participant $participant
+     * @param FitService $fitService
+     * @param string $timeSpan
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function reload(Participant $participant, FitService $fitService, $timeSpan = 'yesterday')
     {
         $endDate = null;
-        if ($timespan == 'week') {
+        if ($timeSpan == 'week') {
             $date = strtotime('-8 day');
-            $message = 'Hämtat förra veckans data för ';
-        } elseif ($timespan == 'today') {
+            $message = trans('participant.fetched_last_week_data', ['name' => $participant->name]);
+        } elseif ($timeSpan == 'today') {
             $date = strtotime('today');
             $endDate = $date;
-            $message = 'Hämtat dagens data för ';
-        } elseif ($timespan == 'yesterday') {
+            $message = trans('participant.fetched_today_data', ['name' => $participant->name]);
+        } else {
             $date = strtotime('-1 day');
-            $message = 'Hämtat gårdagens data för ';
+            $message = trans('participant.fetched_yesterday_data', ['name' => $participant->name]);
         }
 
-        $participant = Participant::findOrFail($id);
-        $participant->updateFitnessData($date, $endDate);
-
-        $message .= $participant->name;
+        $fitService->updateFitnessData($participant, $date, $endDate);
 
         return redirect('/participants')->with('message', $message);
     }

@@ -23,8 +23,8 @@
                     <td width="45"><img src="{{ $participant->picture }}" class="img-circle" width="40"></td>
                     <td>{{ $participant->name }}</td>
                     <td>
-                        @if($participant->day_count > 0)
-                            {{ number_format($participant->total_steps / $participant->day_count, 0, ',', ' ') }} steg / dag
+                        @if($participant->dayCount > 0)
+                            {{ number_format($participant->totalSteps / $participant->dayCount, 0, ',', ' ') }} steg / dag
                         @else
                             0 steg / dag
                         @endif

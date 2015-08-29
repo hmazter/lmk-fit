@@ -1,94 +1,72 @@
-<?php namespace LMK\Http\Controllers;
+<?php
 
-use LMK\Http\Requests\LoginRequest;
-use Illuminate\Contracts\Auth\Guard;
-use LMK\Http\Requests\RegisterRequest;
+namespace LMK\Http\Controllers;
 
-class AuthController extends Controller {
+class AuthController extends Controller
+{
+    public function auth()
+    {
+        $serviceConfig = config()->get('services.fit');
+        $url = 'https://accounts.google.com/o/oauth2/auth';
+        $options = [
+            'response_type' => 'code',
+            'client_id' => $serviceConfig['client_id'],
+            'scope' => 'https://www.googleapis.com/auth/fitness.activity.write https://www.googleapis.com/auth/userinfo.profile',
+            'redirect_uri' => 'http://lmk-fit.hmazter.com/code',
+            'access_type' => 'offline',
+            'approval_prompt' => 'force'
+        ];
 
-	/**
-	 * The Guard implementation.
-	 *
-	 * @var Guard
-	 */
-	protected $auth;
+        $url .= '?' . http_build_query($options);
 
-	/**
-	 * Create a new authentication controller instance.
-	 *
-	 * @param  Guard  $auth
-	 * @return void
-	 */
-	public function __construct(Guard $auth)
-	{
-		$this->auth = $auth;
+        return redirect($url);
+    }
 
-		$this->middleware('guest', ['except' => 'getLogout']);
-	}
+    public function code()
+    {
+        if (!Input::has('code')) {
+            return new Response('Missing parameter: code', 400);
+        }
 
-	/**
-	 * Show the application registration form.
-	 *
-	 * @return Response
-	 */
-	public function getRegister()
-	{
-		return view('auth.register');
-	}
+        // Get callback data
+        $code = Input::get('code');
+        $serviceConfig = Config::get('services.fit');
 
-	/**
-	 * Handle a registration request for the application.
-	 *
-	 * @param  RegisterRequest  $request
-	 * @return Response
-	 */
-	public function postRegister(RegisterRequest $request)
-	{
-		// Registration form is valid, create user...
+        // exchange code for access token
+        $url = 'https://accounts.google.com/o/oauth2/token';
+        $data = [
+            'body' => [
+                'code' => $code,
+                'client_id' => $serviceConfig['client_id'],
+                'client_secret' => $serviceConfig['client_secret'],
+                'redirect_uri' => 'http://lmk-fit.hmazter.com/code',
+                'grant_type' => 'authorization_code'
+            ]
+        ];
+        $client = new Client();
+        $response = $client->post($url, $data);
+        $jsonData = $response->json();
 
-		$this->auth->login($user);
+        // get participant name
+        $url = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json';
+        $options = [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $jsonData['access_token']
+            ]
+        ];
+        $response = $client->get($url, $options);
+        $profileData = $response->json();
 
-		return redirect('/');
-	}
+        // save as new participant
+        Participant::create([
+            'name' => $profileData['name'],
+            'picture' => $profileData['picture'],
+            'access_token' => $jsonData['access_token'],
+            'refresh_token' => $jsonData['refresh_token'],
+            'token_expire' => time() + $jsonData['expires_in']
+        ]);
 
-	/**
-	 * Show the application login form.
-	 *
-	 * @return Response
-	 */
-	public function getLogin()
-	{
-		return view('auth.login');
-	}
-
-	/**
-	 * Handle a login request to the application.
-	 *
-	 * @param  LoginRequest  $request
-	 * @return Response
-	 */
-	public function postLogin(LoginRequest $request)
-	{
-		if ($this->auth->attempt($request->only('email', 'password')))
-		{
-			return redirect('/');
-		}
-
-		return redirect('/auth/login')->withErrors([
-			'email' => 'These credentials do not match our records.',
-		]);
-	}
-
-	/**
-	 * Log the user out of the application.
-	 *
-	 * @return Response
-	 */
-	public function getLogout()
-	{
-		$this->auth->logout();
-
-		return redirect('/');
-	}
-
+        // flash message
+        return redirect('/')->with('message', 'added');
+    }
 }
