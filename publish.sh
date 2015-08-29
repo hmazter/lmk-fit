@@ -2,7 +2,7 @@
 
 git pull origin master --tags
 
-sudo ./composer.phar install
+sudo ./composer.phar install --no-dev
 
 sudo chmod -R 777 storage
 
