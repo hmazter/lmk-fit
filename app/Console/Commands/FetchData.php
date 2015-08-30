@@ -58,7 +58,7 @@ class FetchData extends Command {
             $date = strtotime('-1 day');
             $this->info('Getting data for yesterday');
         } else {
-            $date = strtotime($timespan);
+            $endDate = $date = strtotime($timespan);
             $this->info('Getting data for '.$timespan);
         }
 

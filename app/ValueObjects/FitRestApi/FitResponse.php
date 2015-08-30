@@ -42,7 +42,7 @@ class FitResponse
      * @SerializedName("point")
      * @var array
      */
-    private $points;
+    private $points = [];
 
     /**
      * @return string
