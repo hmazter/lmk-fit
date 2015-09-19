@@ -1,0 +1,17 @@
+language: php
+
+php:
+  - 5.6
+
+before_script:
+  - composer self-update
+  - composer install
+  - mysql -e 'CREATE DATABASE lmk_test;'
+  - php artisan migrate --force
+
+script:
+ - mkdir -p build/logs
+ - phpunit --coverage-clover build/logs/clover.xml
+
+after_script:
+# - ./vendor/bin/coveralls -v

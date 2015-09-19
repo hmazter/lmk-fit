@@ -3,17 +3,21 @@
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use LMK\Models\Participant;
 
-class ExampleTest extends TestCase
+class ParticipantTest extends TestCase
 {
     /**
      * A basic functional test example.
      *
      * @return void
      */
-    public function testBasicExample()
+    public function testCreate()
     {
-        $this->visit('/')
-            ->see('LMK Fitness');
+        Participant::create([
+            'name' => 'Test'
+        ]);
+
+        $this->assertEquals('Test', Participant::first()->name);
     }
 }

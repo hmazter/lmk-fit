@@ -16,5 +16,6 @@
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="DEFAULT_CONNECTION" value="test"/>
     </php>
 </phpunit>
