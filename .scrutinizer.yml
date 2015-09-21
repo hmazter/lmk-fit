@@ -7,3 +7,8 @@ filter:
 
 tools:
     external_code_coverage: true
+
+    php_code_sniffer:
+        enabled:              true
+        config:
+            standard:         PSR2
