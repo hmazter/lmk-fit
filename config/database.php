@@ -64,7 +64,7 @@ return [
             'driver' => 'mysql',
             'host' => '127.0.0.1',
             'database' => 'lmk_test',
-            'username' => 'travis',
+            'username' => env('DB_TEST_USERNAME', 'travis'),
             'password' => '',
             'charset' => 'utf8',
             'collation' => 'utf8_unicode_ci',

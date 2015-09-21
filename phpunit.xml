@@ -14,6 +14,13 @@
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory>./app</directory>
+        </whitelist>
+    </filter>
+
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="DEFAULT_CONNECTION" value="test"/>
