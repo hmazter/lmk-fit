@@ -4,6 +4,7 @@ namespace LMK\Http\Controllers;
 
 use LMK\Models\Participant;
 use LMK\Services\FitService;
+use LMK\ValueObjects\TimespanNanos;
 
 class ParticipantController extends Controller
 {
@@ -32,20 +33,17 @@ class ParticipantController extends Controller
      */
     public function reload(Participant $participant, FitService $fitService, $timeSpan = 'yesterday')
     {
-        $endDate = null;
         if ($timeSpan == 'week') {
-            $date = strtotime('-8 day');
             $message = trans('participant.fetched_last_week_data', ['name' => $participant->name]);
         } elseif ($timeSpan == 'today') {
-            $date = strtotime('today');
-            $endDate = $date;
             $message = trans('participant.fetched_today_data', ['name' => $participant->name]);
         } else {
-            $date = strtotime('-1 day');
             $message = trans('participant.fetched_yesterday_data', ['name' => $participant->name]);
         }
 
-        $fitService->updateFitnessData($participant, $date, $endDate);
+        $timespanNanos = TimespanNanos::createFromStartString($timeSpan);
+
+        $fitService->updateFitnessData($participant, $timespanNanos);
 
         return redirect('/participants')->with('message', $message);
     }

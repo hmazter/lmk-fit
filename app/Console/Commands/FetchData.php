@@ -5,17 +5,18 @@ namespace LMK\Console\Commands;
 use Illuminate\Console\Command;
 use LMK\Models\Participant;
 use LMK\Services\FitService;
-use Symfony\Component\Console\Input\InputArgument;
+use LMK\ValueObjects\TimespanNanos;
 
-class FetchData extends Command {
-
-
+class FetchData extends Command
+{
     /**
-     * The console command name.
+     * The console command signature; name arguments and options.
      *
      * @var string
      */
-    protected $name = 'lmk:fetch-data';
+    protected $signature = 'lmk:fetch-data
+                            {timespan=yesterday : The timespan to get data for; today, yesterday, week or php dateformat}
+                            {--p|participant= : Limit to participant id}';
 
     /**
      * The console command description.
@@ -24,12 +25,15 @@ class FetchData extends Command {
      */
     protected $description = 'Fetch data from Google Fit REST API.';
 
-    /** @var FitService $fitService */
+    /**
+     * @var FitService $fitService
+     */
     protected $fitService;
 
     /**
      * Create a new command instance.
      *
+     * @param FitService $fitService
      */
     public function __construct(FitService $fitService)
     {
@@ -40,65 +44,27 @@ class FetchData extends Command {
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
     public function fire()
     {
-        $timespan = $this->argument('timespan');
-        $endDate = null;
-        if ($timespan == 'week') {
-            $date = strtotime('-8 day');
-            $this->info('Getting data for a week ending yesterday');
-        } elseif ($timespan == 'today') {
-            $date = strtotime('today');
-            $endDate = $date;
-            $this->info('Getting data for today');
-        } elseif ($timespan == 'yesterday') {
-            $date = strtotime('-1 day');
-            $this->info('Getting data for yesterday');
-        } else {
-            $endDate = $date = strtotime($timespan);
-            $this->info('Getting data for '.$timespan);
-        }
+        $timespan = TimespanNanos::createFromStartString($this->argument('timespan'));
 
-        $limit = $this->argument('participant');
+        $timespanDescription = $timespan->hasDescription() ? $timespan->getDescription() : $this->argument('timespan');
+        $this->info('Getting data for ' . $timespanDescription);
+
+        $limit = $this->option('participant');
         if ($limit > 0) {
             $participants = [Participant::find($limit)];
         } else {
             $participants = Participant::all();
         }
+
         foreach ($participants as $participant) {
             /** @var Participant $participant */
             $this->info($participant->name);
-            $structured = $this->fitService->updateFitnessData($participant, $date, $endDate);
+            $rows = $this->fitService->updateFitnessData($participant, $timespan);
 
-            $this->info(var_export($structured, true));
+            $this->table(['Date', 'Steps'], $rows);
         }
     }
-
-	/**
-	 * Get the console command arguments.
-	 *
-	 * @return array
-	 */
-	protected function getArguments()
-	{
-		return [
-            array('timespan', InputArgument::OPTIONAL, 'The timespan to get data for: today, yesterday, week or php dateformat', 'yesterday'),
-            array('participant', InputArgument::OPTIONAL, 'Limit to participant id', 0)
-		];
-	}
-
-	/**
-	 * Get the console command options.
-	 *
-	 * @return array
-	 */
-	protected function getOptions()
-	{
-		return [
-
-		];
-	}
 }

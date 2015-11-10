@@ -7,52 +7,35 @@ use GuzzleHttp\Client;
 use LMK\Models\Participant;
 use LMK\ValueObjects\FitRestApi\FitResponse;
 use LMK\ValueObjects\FitRestApi\Point;
+use LMK\ValueObjects\TimespanNanos;
 
 class FitService
 {
-
-    public function updateFitnessData(Participant $participant, $startTimestamp, $endTimestamp = null)
+    /**
+     * Update fitness data for Participant in the given timespan
+     *
+     * @param Participant $participant
+     * @param TimespanNanos $timespanNanos
+     * @return array    list of date-fitness data pairs; [date, amount]
+     */
+    public function updateFitnessData(Participant $participant, TimespanNanos $timespanNanos)
     {
-        if ($endTimestamp == null) {
-            $endTimestamp = strtotime('-1 days');
-        }
-
-        if ($participant->isExpiredToken()) {
-            $this->refreshToken($participant);
-        }
-
-        $startTimeNano = $this->getNanoTimestamp($startTimestamp, 'start');
-        $endTimeNano = $this->getNanoTimestamp($endTimestamp, 'end');
-
         $restClient = new Client();
-        $options = [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $participant->access_token
-            ]
-        ];
 
-        $url = 'https://www.googleapis.com/fitness/v1/users/me/dataSources/derived:com.google.step_count.delta:com.google.android.gms:estimated_steps/'.
-            'datasets/' . $startTimeNano . '-' . $endTimeNano;
+        $url = 'https://www.googleapis.com/fitness/v1/users/me/dataSources/derived:com.google.step_count.delta:com.google.android.gms:estimated_steps/datasets/'
+            . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
 
-        $response = $restClient->get($url, $options);
+        $response = $restClient->get($url, $this->getOauthHeader($participant));
         $data = $response->getBody()->getContents();
 
         /** @var FitResponse $fitResponse */
         $fitResponse = $this->getSerializer()->deserialize($data, 'LMK\ValueObjects\FitRestApi\FitResponse', 'json');
-        $steps = [];
+        $steps = $this->groupFitnessDataPerDate($fitResponse->getPoints());
 
-        /** @var Point $point */
-        foreach ($fitResponse->getPoints() as $point) {
-            $date = $point->getStartDate()->format('Y-m-d');
-
-            if (!isset($steps[$date])) {
-                $steps[$date] = 0;
-            }
-
-            $steps[$date] += $point->getValueSum();
-        }
-
+        $rows = [];
         foreach ($steps as $fitnessDate => $amount) {
+            $rows[] = [$fitnessDate, $amount];
+
             $participant->fitnessData()->updateOrCreate([
                 'date' => $fitnessDate,
                 'type' => 'steps'
@@ -61,7 +44,7 @@ class FitService
             ]);
         }
 
-        return $steps;
+        return $rows;
     }
 
     /**
@@ -82,22 +65,42 @@ class FitService
         $participant->setAccessToken($token);
     }
 
-    private function getNanoTimestamp($timestamp, $mode)
+    private function groupFitnessDataPerDate(array $points)
     {
-        if ($mode == 'start') {
-            $time = '00:00:00';
-        } else {
-            $time = '23:59:59';
+        $data = [];
+
+        /** @var Point $point */
+        foreach ($points as $point) {
+            $date = $point->getStartDate()->format('Y-m-d');
+
+            if (!isset($data[$date])) {
+                $data[$date] = 0;
+            }
+
+            $data[$date] += $point->getValueSum();
         }
 
-        $startTime = new \DateTime(date('Y-m-d '.$time, $timestamp), new \DateTimeZone('UTC'));
-        return $startTime->format('U') * (1000 * 1000 * 1000);
+        return $data;
+    }
+
+    private function getOauthHeader(Participant $participant)
+    {
+        if ($participant->isExpiredToken()) {
+            $this->refreshToken($participant);
+        }
+
+        return [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $participant->access_token
+            ]
+        ];
     }
 
     /**
      * @return \JMS\Serializer\Serializer
      */
-    private function getSerializer() {
+    private function getSerializer()
+    {
         return SerializerBuilder::create()->build();
     }
 }
