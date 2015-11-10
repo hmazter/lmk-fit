@@ -6,7 +6,7 @@ use JMS\Serializer\Annotation\Type;
 use JMS\Serializer\Annotation\SerializedName;
 
 
-class FitResponse
+class DataSetResponse
 {
 
     /**

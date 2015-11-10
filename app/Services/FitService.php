@@ -5,7 +5,8 @@ namespace LMK\Services;
 use JMS\Serializer\SerializerBuilder;
 use GuzzleHttp\Client;
 use LMK\Models\Participant;
-use LMK\ValueObjects\FitRestApi\FitResponse;
+use LMK\ValueObjects\FitRestApi\DataSourcesResponse;
+use LMK\ValueObjects\FitRestApi\DataSetResponse;
 use LMK\ValueObjects\FitRestApi\Point;
 use LMK\ValueObjects\TimespanNanos;
 
@@ -28,8 +29,8 @@ class FitService
         $response = $restClient->get($url, $this->getOauthHeader($participant));
         $data = $response->getBody()->getContents();
 
-        /** @var FitResponse $fitResponse */
-        $fitResponse = $this->getSerializer()->deserialize($data, 'LMK\ValueObjects\FitRestApi\FitResponse', 'json');
+        /** @var DataSetResponse $fitResponse */
+        $fitResponse = $this->getSerializer()->deserialize($data, \LMK\ValueObjects\FitRestApi\DataSetResponse::class, 'json');
         $steps = $this->groupFitnessDataPerDate($fitResponse->getPoints());
 
         $rows = [];
@@ -45,6 +46,21 @@ class FitService
         }
 
         return $rows;
+    }
+
+    /**
+     * @param Participant $participant
+     * @return DataSourcesResponse
+     */
+    public function listDataSources(Participant $participant)
+    {
+        $restClient = new Client();
+        $url = 'https://www.googleapis.com/fitness/v1/users/me/dataSources/';
+
+        $response = $restClient->get($url, $this->getOauthHeader($participant));
+        $parsed = $this->getSerializer()->deserialize($response->getBody()->getContents(), \LMK\ValueObjects\FitRestApi\DataSourcesResponse::class, 'json');
+
+        return $parsed;
     }
 
     /**
