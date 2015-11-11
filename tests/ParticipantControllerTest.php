@@ -4,16 +4,16 @@ use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class ExampleTest extends TestCase
+class ParticipantControllerTest extends TestCase
 {
     /**
      * A basic functional test example.
      *
      * @return void
      */
-    public function testBasicExample()
+    public function testParticipantPage()
     {
-        $this->visit('/')
-            ->see('LMK Fitness');
+        $this->visit('/participants')
+            ->see('Deltagare');
     }
 }

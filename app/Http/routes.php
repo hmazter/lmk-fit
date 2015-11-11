@@ -5,7 +5,7 @@
 /*
  * HomeController
  */
-$router->get('/{type?}', ['as' => 'home', 'uses' => 'HomeController@index']);
+$router->get('/', ['as' => 'home', 'uses' => 'HomeController@index']);
 $router->get('/about', ['as' => 'about', 'uses' => 'HomeController@about']);
 
 /*

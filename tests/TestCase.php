@@ -25,7 +25,5 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
 
     public function tearDown()
     {
-        DB::table('participants')->truncate();
-        DB::table('fitness_data')->truncate();
     }
 }

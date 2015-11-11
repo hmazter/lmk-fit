@@ -12,8 +12,8 @@
             @endif
 
             <div class="btn-group" role="group" aria-label="...">
-                <a href="/steps" class="btn {{ $type == 'steps' ? 'btn-info' : 'btn-default' }}">Steg</a>
-                <a href="/time" class="btn {{ $type == 'time' ? 'btn-info' : 'btn-default' }}">Aktivitetstid</a>
+                <a href="/?type=steps" class="btn {{ $type == 'steps' ? 'btn-info' : 'btn-default' }}">Steg</a>
+                <a href="/?type=time" class="btn {{ $type == 'time' ? 'btn-info' : 'btn-default' }}">Aktivitetstid</a>
             </div>
 
             <span class="pull-right">Senaste omladdningen: {{ $last_reload }}</span>

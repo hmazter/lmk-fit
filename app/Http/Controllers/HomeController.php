@@ -2,6 +2,7 @@
 
 namespace LMK\Http\Controllers;
 
+use Illuminate\Http\Request;
 use LMK\Models\FitnessData;
 use LMK\Models\Participant;
 use LMK\Repositories\FitnessDataRepository;
@@ -12,11 +13,12 @@ class HomeController extends Controller
      * Show the home page with steps table and top lists
      *
      * @param FitnessDataRepository $fitnessDataRepository
-     * @param $type
+     * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function index(FitnessDataRepository $fitnessDataRepository, $type = FitnessData::TYPE_STEP)
+    public function index(FitnessDataRepository $fitnessDataRepository, Request $request)
     {
+        $type = $request->get('type', FitnessData::TYPE_STEP);
         $allowedTypes = [FitnessData::TYPE_TIME, FitnessData::TYPE_STEP];
         if (!in_array($type, $allowedTypes)) {
             abort(500, 'Invalid fitness type');
