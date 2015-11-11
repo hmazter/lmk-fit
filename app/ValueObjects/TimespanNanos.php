@@ -26,7 +26,7 @@ class TimespanNanos
      *
      * @param string $start
      * @param string $end
-     * @param null $description
+     * @param string|null $description
      * @throws InvalidNanoTimestamp
      */
     public function __construct($start, $end, $description = null)
@@ -38,8 +38,8 @@ class TimespanNanos
             throw new InvalidNanoTimestamp('End is not a valid nano timestamp');
         }
 
-        $this->start = $start;
-        $this->end = $end;
+        $this->start = (string)$start;
+        $this->end = (string)$end;
         $this->description = $description;
     }
 
@@ -51,7 +51,6 @@ class TimespanNanos
      */
     public static function createFromStartString($start)
     {
-        $end = null;
         $description = null;
         switch ($start) {
             case 'week':
@@ -71,7 +70,7 @@ class TimespanNanos
                 break;
 
             default:
-                $end = $start = $date = strtotime($start);
+                $end = $start = strtotime($start);
         }
 
         return new static(
