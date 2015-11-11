@@ -25,6 +25,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FitnessData extends Model
 {
+    const TYPE_STEP = 'steps';
+
+    const TYPE_TIME = 'time';
 
     /**
      * The database table used by the model.

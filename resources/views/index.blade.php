@@ -11,8 +11,18 @@
             <div class="alert alert-success" role="alert">Omladdning startad</div>
             @endif
 
+            <div class="btn-group" role="group" aria-label="...">
+                <a href="/steps" class="btn {{ $type == 'steps' ? 'btn-info' : 'btn-default' }}">Steg</a>
+                <a href="/time" class="btn {{ $type == 'time' ? 'btn-info' : 'btn-default' }}">Aktivitetstid</a>
+            </div>
+
             <span class="pull-right">Senaste omladdningen: {{ $last_reload }}</span>
-            <h3>Steg per dag och deltagare</h3>
+            @if($type == 'steps')
+                <h3>Steg per dag och deltagare</h3>
+            @elseif($type == 'time')
+                <h3>Aktivitetstid per dag och deltagare</h3>
+            @endif
+
             <div class="table-responsive">
                 <table class="table table-striped">
                 <thead>
@@ -26,13 +36,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($fitnessData as $date => $steps)
+                    @foreach($fitnessData as $date => $amount)
                     <tr>
                         <td>{{ $date }}</td>
                         @foreach($participants as $participant)
                             <td>
-                                @if(isset($steps[$participant->id]))
-                                {{ number_format($steps[$participant->id], 0, ',', ' ') }} steps
+                                @if($type == 'steps' && isset($amount[$participant->id]))
+                                    {{ number_format($amount[$participant->id], 0, ',', ' ') }} steg
+                                @endif
+
+                                @if($type == 'time' && isset($amount[$participant->id]))
+                                    {{ number_format($amount[$participant->id] / 60, 1, ',', ' ') }} minuter
                                 @endif
                             </td>
                         @endforeach
@@ -41,7 +55,6 @@
                 </tbody>
                 </table>
             </div>
-
 
             <h3>
                 Veckans topplista
@@ -62,8 +75,14 @@
                         <td>{{ $count++ }}</td>
                         <td>{{ $fitnessData->participant->name }}</td>
                         <td>
-                            {{ number_format($fitnessData->total_amount, 0, ',', ' ') }} steg
-                            <small class="text-muted">{{ number_format($fitnessData->total_amount/7, 0, ',', ' ') }} steg/dag</small>
+                            @if($type == \LMK\Models\FitnessData::TYPE_STEP)
+                                {{ number_format($fitnessData->total_amount, 0, ',', ' ') }} steg
+                                <small class="text-muted">{{ number_format($fitnessData->total_amount/7, 0, ',', ' ') }} steg/dag</small>
+
+                            @elseif($type == \LMK\Models\FitnessData::TYPE_TIME)
+                                {{ number_format($fitnessData->total_amount / 60, 1, ',', ' ') }} minuter
+                                <small class="text-muted">{{ number_format($fitnessData->total_amount/7/60, 1, ',', ' ') }} minuter/dag</small>
+                            @endif
                         </td>
                     </tr>
                     @endforeach
@@ -88,7 +107,13 @@
                     <tr>
                         <td>{{ $count++ }}</td>
                         <td>{{ $fitnessData->participant->name }}</td>
-                        <td>{{ number_format($fitnessData->amount, 0, ',', ' ') }} steg</td>
+                        <td>
+                            @if($type == \LMK\Models\FitnessData::TYPE_STEP)
+                                {{ number_format($fitnessData->amount, 0, ',', ' ') }} steg
+                            @elseif($type == \LMK\Models\FitnessData::TYPE_TIME)
+                                {{ number_format($fitnessData->amount/60, 1, ',', ' ') }} minuter
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
