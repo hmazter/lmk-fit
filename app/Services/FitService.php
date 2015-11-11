@@ -12,6 +12,8 @@ use LMK\ValueObjects\TimespanNanos;
 
 class FitService
 {
+    private $baseUrl = 'https://www.googleapis.com/fitness/v1/users/me';
+
     /**
      * Update fitness data for Participant in the given timespan
      *
@@ -21,25 +23,52 @@ class FitService
      */
     public function updateFitnessData(Participant $participant, TimespanNanos $timespanNanos)
     {
-        $restClient = new Client();
+        return [
+            'Steps' => $this->updateStepData($participant, $timespanNanos),
+            'Activity' => $this->updateActivityData($participant, $timespanNanos)
+        ];
+    }
 
-        $url = 'https://www.googleapis.com/fitness/v1/users/me/dataSources/derived:com.google.step_count.delta:com.google.android.gms:estimated_steps/datasets/'
+    public function updateStepData(Participant $participant, TimespanNanos $timespanNanos)
+    {
+        $source = 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps';
+        $url = $this->baseUrl . '/dataSources/'.$source.'/datasets/'
             . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
 
-        $response = $restClient->get($url, $this->getOauthHeader($participant));
-        $data = $response->getBody()->getContents();
-
-        /** @var DataSetResponse $fitResponse */
-        $fitResponse = $this->getSerializer()->deserialize($data, \LMK\ValueObjects\FitRestApi\DataSetResponse::class, 'json');
-        $steps = $this->groupFitnessDataPerDate($fitResponse->getPoints());
+        $points = $this->getFitnessData($participant, $url);
+        $steps = $this->groupStepsDataPerDate($points);
 
         $rows = [];
-        foreach ($steps as $fitnessDate => $amount) {
-            $rows[] = [$fitnessDate, $amount];
+        foreach ($steps as $date => $amount) {
+            $rows[] = [$date, $amount];
 
             $participant->fitnessData()->updateOrCreate([
-                'date' => $fitnessDate,
+                'date' => $date,
                 'type' => 'steps'
+            ], [
+                'amount' => $amount
+            ]);
+        }
+
+        return $rows;
+    }
+
+    public function updateActivityData(Participant $participant, TimespanNanos $timespanNanos)
+    {
+        $source = 'derived:com.google.activity.segment:com.google.android.gms:merge_activity_segments';
+        $url = $this->baseUrl . '/dataSources/'.$source.'/datasets/'
+            . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
+
+        $points = $this->getFitnessData($participant, $url);
+        $activity = $this->groupActivityDataPerDate($points);
+
+        $rows = [];
+        foreach ($activity as $date => $amount) {
+            $rows[] = [$date, $amount];
+
+            $participant->fitnessData()->updateOrCreate([
+                'date' => $date,
+                'type' => 'time'
             ], [
                 'amount' => $amount
             ]);
@@ -50,12 +79,29 @@ class FitService
 
     /**
      * @param Participant $participant
+     * @param $url
+     * @return array points
+     */
+    private function getFitnessData(Participant $participant, $url)
+    {
+        $restClient = new Client();
+        $response = $restClient->get($url, $this->getOauthHeader($participant));
+        $data = $response->getBody()->getContents();
+
+        /** @var DataSetResponse $fitResponse */
+        $fitResponse = $this->getSerializer()->deserialize($data, \LMK\ValueObjects\FitRestApi\DataSetResponse::class, 'json');
+
+        return $fitResponse->getPoints();
+    }
+
+    /**
+     * @param Participant $participant
      * @return DataSourcesResponse
      */
     public function listDataSources(Participant $participant)
     {
         $restClient = new Client();
-        $url = 'https://www.googleapis.com/fitness/v1/users/me/dataSources/';
+        $url = $this->baseUrl . '/dataSources';
 
         $response = $restClient->get($url, $this->getOauthHeader($participant));
         $parsed = $this->getSerializer()->deserialize($response->getBody()->getContents(), \LMK\ValueObjects\FitRestApi\DataSourcesResponse::class, 'json');
@@ -81,7 +127,7 @@ class FitService
         $participant->setAccessToken($token);
     }
 
-    private function groupFitnessDataPerDate(array $points)
+    private function groupStepsDataPerDate(array $points)
     {
         $data = [];
 
@@ -94,6 +140,26 @@ class FitService
             }
 
             $data[$date] += $point->getValueSum();
+        }
+
+        return $data;
+    }
+
+    private function groupActivityDataPerDate(array $points)
+    {
+        $data = [];
+
+        /** @var Point $point */
+        foreach ($points as $point) {
+            if ($point->isActivityMoving()) {
+                $date = $point->getModifiedDate()->format('Y-m-d');
+
+                if (!isset($data[$date])) {
+                    $data[$date] = 0;
+                }
+
+                $data[$date] += $point->getTimespanLength();
+            }
         }
 
         return $data;

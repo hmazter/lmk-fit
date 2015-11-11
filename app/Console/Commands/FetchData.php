@@ -62,9 +62,11 @@ class FetchData extends Command
         foreach ($participants as $participant) {
             /** @var Participant $participant */
             $this->info($participant->name);
-            $rows = $this->fitService->updateFitnessData($participant, $timespan);
+            $sets = $this->fitService->updateFitnessData($participant, $timespan);
 
-            $this->table(['Date', 'Steps'], $rows);
+            foreach ($sets as $set => $rows) {
+                $this->table(['Date', $set], $rows);
+            }
         }
     }
 }

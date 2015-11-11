@@ -55,22 +55,22 @@ class ListDataSources extends Command
             $participant = Participant::find($this->option('participant'));
         }
 
-        $reponse = $this->fitService->listDataSources($participant);
+        $response = $this->fitService->listDataSources($participant);
 
         $rows = [];
         /** @var DataSource $source */
-        foreach ($reponse->getDataSource() as $source) {
+        foreach ($response->getDataSource() as $source) {
             $streamId = $this->option('limit') ?
                 str_limit($source->getDataStreamId(), $this->option('limit')) :
                 $source->getDataStreamId();
 
             $rows[] = [
-                $source->getDataStreamName(),
-                $streamId
+                $streamId,
+                $source->getType(),
             ];
         }
 
         $this->info('Datasources for '. $participant->name);
-        $this->table(['Name', 'Id'], $rows);
+        $this->table(['Id', 'Type'], $rows);
     }
 }

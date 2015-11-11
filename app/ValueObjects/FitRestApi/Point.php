@@ -71,6 +71,26 @@ class Point
     }
 
     /**
+     * Get the end time as a date object
+     *
+     * @return Carbon
+     */
+    public function getEndDate()
+    {
+        return Carbon::createFromTimestamp(intval($this->getEndTimeNanos() / (1000 * 1000 * 1000)));
+    }
+
+    /**
+     * Get the number of seconds between startTimeNano and endTimeNano
+     *
+     * @return int  number of seconds
+     */
+    public function getTimespanLength()
+    {
+        return $this->getStartDate()->diffInSeconds($this->getEndDate(), true);
+    }
+
+    /**
      * @return string
      */
     public function getEndTimeNanos()
@@ -103,6 +123,14 @@ class Point
     }
 
     /**
+     * @return Carbon
+     */
+    public function getModifiedDate()
+    {
+        return Carbon::createFromTimestamp(intval($this->getModifiedTimeMillis() / (1000)));
+    }
+
+    /**
      * @return array
      */
     public function getValues()
@@ -124,5 +152,21 @@ class Point
         }
 
         return $sum;
+    }
+
+    public function isActivityMoving()
+    {
+        $exclude = [
+            0, // In vehicle
+            3, // Still (not moving)
+        ];
+        /** @var Value $value */
+        foreach ($this->getValues() as $value) {
+            if (in_array($value->getIntVal(), $exclude)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
