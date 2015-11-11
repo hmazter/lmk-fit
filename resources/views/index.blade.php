@@ -46,7 +46,7 @@
                                 @endif
 
                                 @if($type == 'time' && isset($amount[$participant->id]))
-                                    {{ number_format($amount[$participant->id] / 60, 1, ',', ' ') }} minuter
+                                    {{ number_format($amount[$participant->id] / 60, 0, ',', ' ') }} minuter
                                 @endif
                             </td>
                         @endforeach
@@ -80,8 +80,8 @@
                                 <small class="text-muted">{{ number_format($fitnessData->total_amount/7, 0, ',', ' ') }} steg/dag</small>
 
                             @elseif($type == \LMK\Models\FitnessData::TYPE_TIME)
-                                {{ number_format($fitnessData->total_amount / 60, 1, ',', ' ') }} minuter
-                                <small class="text-muted">{{ number_format($fitnessData->total_amount/7/60, 1, ',', ' ') }} minuter/dag</small>
+                                {{ number_format($fitnessData->total_amount / 60, 0, ',', ' ') }} minuter
+                                <small class="text-muted">{{ number_format($fitnessData->total_amount/7/60, 0, ',', ' ') }} minuter/dag</small>
                             @endif
                         </td>
                     </tr>
@@ -111,7 +111,7 @@
                             @if($type == \LMK\Models\FitnessData::TYPE_STEP)
                                 {{ number_format($fitnessData->amount, 0, ',', ' ') }} steg
                             @elseif($type == \LMK\Models\FitnessData::TYPE_TIME)
-                                {{ number_format($fitnessData->amount/60, 1, ',', ' ') }} minuter
+                                {{ number_format($fitnessData->amount/60, 0, ',', ' ') }} minuter
                             @endif
                         </td>
                     </tr>
