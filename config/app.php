@@ -145,6 +145,7 @@ return [
 		'LMK\Providers\RouteServiceProvider',
 
 		'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
+        Spatie\Backup\BackupServiceProvider::class
 	],
 
 	/*

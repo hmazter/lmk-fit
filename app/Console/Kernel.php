@@ -24,5 +24,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // Update fitness data
+        $schedule->command('lmk:fetch-data today')->hourly();
+        $schedule->command('lmk:fetch-data yesterday')->twiceDaily(3, 9);
+
+        // Backup database and clean old backups
+        $schedule->command('backup:run --only-db')->daily();
+        $schedule->command('backup:clean')->daily();
     }
 }
