@@ -19,7 +19,7 @@ class FitService
      *
      * @param Participant $participant
      * @param TimespanNanos $timespanNanos
-     * @return array    list of date-fitness data pairs; [date, amount]
+     * @return array update response, [type => fitness data]
      */
     public function updateFitnessData(Participant $participant, TimespanNanos $timespanNanos)
     {
@@ -29,10 +29,17 @@ class FitService
         ];
     }
 
+    /**
+     * Update step data for Participant in the given timespan
+     *
+     * @param Participant $participant
+     * @param TimespanNanos $timespanNanos
+     * @return array    list of fitness data-pairs: [date, amount]
+     */
     public function updateStepData(Participant $participant, TimespanNanos $timespanNanos)
     {
         $source = 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps';
-        $url = $this->baseUrl . '/dataSources/'.$source.'/datasets/'
+        $url = $this->baseUrl . '/dataSources/' . $source . '/datasets/'
             . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
 
         $points = $this->getFitnessData($participant, $url);
@@ -53,10 +60,17 @@ class FitService
         return $rows;
     }
 
+    /**
+     * Update time activity data for Participant in the given timespan
+     *
+     * @param Participant $participant
+     * @param TimespanNanos $timespanNanos
+     * @return array    list of fitness data-pairs: [date, amount]
+     */
     public function updateActivityData(Participant $participant, TimespanNanos $timespanNanos)
     {
         $source = 'derived:com.google.activity.segment:com.google.android.gms:merge_activity_segments';
-        $url = $this->baseUrl . '/dataSources/'.$source.'/datasets/'
+        $url = $this->baseUrl . '/dataSources/' . $source . '/datasets/'
             . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
 
         $points = $this->getFitnessData($participant, $url);
@@ -78,9 +92,11 @@ class FitService
     }
 
     /**
+     * Get fitness data from API from the specified url and Participant
+     *
      * @param Participant $participant
-     * @param $url
-     * @return array points
+     * @param string $url
+     * @return array points     list of Point
      */
     private function getFitnessData(Participant $participant, $url)
     {
@@ -95,6 +111,8 @@ class FitService
     }
 
     /**
+     * Get a list of all data sources for a Participant
+     *
      * @param Participant $participant
      * @return DataSourcesResponse
      */
@@ -122,11 +140,17 @@ class FitService
         $client->setClientSecret($serviceData['client_secret']);
         $client->setAccessType('offline');
         $client->refreshToken($participant->refresh_token);
-        $token = \GuzzleHttp\json_decode($client->getAccessToken());
+        $token = json_decode($client->getAccessToken());
 
         $participant->setAccessToken($token);
     }
 
+    /**
+     * Summarize step data from points array and group it by date
+     *
+     * @param array $points
+     * @return array
+     */
     private function groupStepsDataPerDate(array $points)
     {
         $data = [];
@@ -145,6 +169,12 @@ class FitService
         return $data;
     }
 
+    /**
+     * Summarize activity time per date
+     *
+     * @param array $points
+     * @return array
+     */
     private function groupActivityDataPerDate(array $points)
     {
         $data = [];
@@ -165,6 +195,13 @@ class FitService
         return $data;
     }
 
+    /**
+     * Get the oAuth header for a participant
+     * Refresh token if its expired
+     *
+     * @param Participant $participant
+     * @return array
+     */
     private function getOauthHeader(Participant $participant)
     {
         if ($participant->isExpiredToken()) {
