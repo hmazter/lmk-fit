@@ -13,6 +13,8 @@ use LMK\ValueObjects\TimespanNanos;
 class FitService
 {
     private $baseUrl = 'https://www.googleapis.com/fitness/v1/users/me';
+    private $stepSource = 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps';
+    private $timeSource = 'derived:com.google.activity.segment:com.google.android.gms:merge_activity_segments';
 
     /**
      * Update fitness data for Participant in the given timespan
@@ -38,11 +40,9 @@ class FitService
      */
     public function updateStepData(Participant $participant, TimespanNanos $timespanNanos)
     {
-        $source = 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps';
-        $url = $this->baseUrl . '/dataSources/' . $source . '/datasets/'
-            . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
+        $url = $this->baseUrl . '/dataSources/' . $this->stepSource . '/datasets/' . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
 
-        $points = $this->getFitnessData($participant, $url);
+        $points = $this->fetchFitnessData($participant, $url);
         $steps = $this->groupStepsDataPerDate($points);
 
         $rows = [];
@@ -69,11 +69,9 @@ class FitService
      */
     public function updateActivityData(Participant $participant, TimespanNanos $timespanNanos)
     {
-        $source = 'derived:com.google.activity.segment:com.google.android.gms:merge_activity_segments';
-        $url = $this->baseUrl . '/dataSources/' . $source . '/datasets/'
-            . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
+        $url = $this->baseUrl . '/dataSources/' . $this->timeSource . '/datasets/' . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
 
-        $points = $this->getFitnessData($participant, $url);
+        $points = $this->fetchFitnessData($participant, $url);
         $activity = $this->groupActivityDataPerDate($points);
 
         $rows = [];
@@ -91,6 +89,19 @@ class FitService
         return $rows;
     }
 
+    public function getFitnessDataPoints(Participant $participant, TimespanNanos $timespanNanos, $type = 'steps')
+    {
+        if ($type == 'steps') {
+            $source = $this->stepSource;
+        } else {
+            $source = $this->timeSource;
+        }
+
+        $url = $this->baseUrl . '/dataSources/' . $source . '/datasets/' . $timespanNanos->getStart() . '-' . $timespanNanos->getEnd();
+
+        return $this->fetchFitnessData($participant, $url);
+    }
+
     /**
      * Get fitness data from API from the specified url and Participant
      *
@@ -98,7 +109,7 @@ class FitService
      * @param string $url
      * @return array points     list of Point
      */
-    private function getFitnessData(Participant $participant, $url)
+    private function fetchFitnessData(Participant $participant, $url)
     {
         $restClient = new Client();
         $response = $restClient->get($url, $this->getOauthHeader($participant));
@@ -182,7 +193,7 @@ class FitService
         /** @var Point $point */
         foreach ($points as $point) {
             if ($point->isActivityMoving()) {
-                $date = $point->getModifiedDate()->format('Y-m-d');
+                $date = $point->getStartDate()->format('Y-m-d');
 
                 if (!isset($data[$date])) {
                     $data[$date] = 0;
