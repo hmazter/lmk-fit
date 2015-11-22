@@ -159,6 +159,12 @@ class Point
         $exclude = [
             0, // In vehicle
             3, // Still (not moving)
+            45, // Meditation
+            72, // Sleeping
+            109, // Light sleep
+            110, // Deep sleep
+            111, // REM sleep
+            112, // Awake (during sleep cycle)
         ];
         /** @var Value $value */
         foreach ($this->getValues() as $value) {
