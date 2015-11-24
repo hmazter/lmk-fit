@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     {
         // Update fitness data
         $schedule->command('lmk:fetch-data today')->hourly();
-        $schedule->command('lmk:fetch-data yesterday')->twiceDaily(3, 9);
+        $schedule->command('lmk:fetch-data yesterday')->twiceDaily(3, 13);
 
         // Backup database and clean old backups
         $schedule->command('backup:run --only-db')->daily();
